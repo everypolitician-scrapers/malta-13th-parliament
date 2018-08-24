@@ -11,7 +11,7 @@ OpenURI::Cache.cache_path = '.cache'
 
 class MembersPage < Scraped::HTML
   field :members do
-    noko.css('.table-responsive td').map { |td| fragment td => Member }
+    noko.css('.table-responsive td').map { |td| fragment(td => Member).to_h }
   end
 end
 
@@ -29,16 +29,12 @@ class Member < Scraped::HTML
   field :party do
     noko.xpath('preceding::h4').last.text.tidy
   end
+
+  # TODO: get this from the URL
+  field :term do
+    13
+  end
 end
 
-def scraper(h)
-  url, klass = h.to_a.first
-  klass.new(response: Scraped::Request.new(url: url).response)
-end
-
-start = 'https://www.parlament.mt/en/13th-leg/political-groups/'
-data = scraper(start => MembersPage).members.map { |mem| mem.to_h.merge(term: 13) }
-
-data.each { |mem| puts mem.reject { |_, v| v.to_s.empty? }.sort_by { |k, _| k }.to_h } if ENV['MORPH_DEBUG']
-ScraperWiki.sqliteexecute('DROP TABLE data') rescue nil
-ScraperWiki.save_sqlite(%i[name term], data)
+url = 'https://www.parlament.mt/en/13th-leg/political-groups/'
+Scraped::Scraper.new(url => MembersPage).store(:members)

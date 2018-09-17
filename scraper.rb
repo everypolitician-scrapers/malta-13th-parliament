@@ -22,8 +22,12 @@ class Member < Scraped::HTML
   end
 
   # TODO: use the date from the other side of the split
-  field :name do
+  field :sort_name do
     noko.text.split('-').first.tidy
+  end
+
+  field :name do
+    sort_name.split(', ').reverse.join(' ')
   end
 
   field :party do

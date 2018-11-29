@@ -31,7 +31,7 @@ class Member < Scraped::HTML
   end
 
   field :party do
-    noko.xpath('preceding::h4').last.text.tidy
+    noko.xpath('preceding::h3').last.text.tidy
   end
 
   # TODO: get this from the URL
